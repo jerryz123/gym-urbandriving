@@ -16,12 +16,12 @@ class PyGameVisualizer:
 
     def __init__(self, screen_dim):
         """
-        Initializes pygame and its drawing surface. 
+        Initializes pygame and its drawing surface.
 
         Parameters
         ----------
-        screen_dim: 
-            Size of the window display. 
+        screen_dim:
+            Size of the window display.
 
         """
 
@@ -39,10 +39,10 @@ class PyGameVisualizer:
         Parameters
         ----------
         state: PositionState
-            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information. 
+            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information.
 
         valid_area: list
-            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state. 
+            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state.
 
         """
         if self.static_surface:
@@ -67,10 +67,10 @@ class PyGameVisualizer:
         Parameters
         ----------
         state: PositionState
-            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information. 
+            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information.
 
         valid_area: list
-            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state. 
+            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state.
 
         """
         new_surface = pygame.Surface((valid_area[1] - valid_area[0],
@@ -91,18 +91,18 @@ class PyGameVisualizer:
         Parameters
         ----------
         state: PositionState
-            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information. 
+            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information.
 
         valid_area: list
-            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state. 
+            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state.
 
         """
         dynamic_collisions, static_collisions = state.get_collisions()
-        
+
         new_surface = pygame.Surface((valid_area[1] - valid_area[0],
                                       valid_area[3] - valid_area[2]),
                                      pygame.SRCALPHA)
- 
+
         for obj1id, obj2id in dynamic_collisions:
             obj1 = state.dynamic_objects[obj1id]
             obj2 = state.dynamic_objects[obj2id]
@@ -116,7 +116,7 @@ class PyGameVisualizer:
         new_surface = pygame.transform.scale(new_surface, (self.screen_dim))
         self.surface.blit(new_surface, (0, 0), None)
         return
-    
+
 
     def render_waypoints(self, waypoints, valid_area):
         """
@@ -125,10 +125,10 @@ class PyGameVisualizer:
         Parameters
         ----------
         waypoints: list
-            A list of [x, y] points that can be marked on the visualizer to use as guides. 
+            A list of [x, y] points that can be marked on the visualizer to use as guides.
 
         valid_area: list
-            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state. 
+            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state.
 
         """
         new_surface = pygame.Surface((valid_area[1] - valid_area[0],
@@ -140,18 +140,24 @@ class PyGameVisualizer:
         self.surface.blit(new_surface, (0, 0), None)
         return
 
-    def render(self, state, valid_area, 
+    def pause(self):
+        while (True):
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    return
+
+    def render(self, state, valid_area,
                rerender_statics=False, waypoints=[]):
         """
-        Renders the state and waypoints with lazy re-rerendering of static objects as needed. 
+        Renders the state and waypoints with lazy re-rerendering of static objects as needed.
 
         Parameters
         ----------
         state: PositionState
-            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information. 
+            State object of the environment to be rendered. Should contain static and dynamic objects as well as collision checking information.
 
         valid_area: list
-            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state. 
+            Two points in the form [x_1, x_2, y_1, y_2] that define the viewing window of the state.
 
         rerender_statics: bool
             Whether to re-render static objects.
@@ -162,16 +168,18 @@ class PyGameVisualizer:
         if (rerender_statics):
             self.static_surface = None
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: sys.exit()
-
-
         self.render_statics(state, valid_area)
         self.render_dynamics(state, valid_area)
         self.render_collisions(state, valid_area)
 
         self.render_waypoints(waypoints, valid_area)
         pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self.pause()
+
 
     def draw_rectangle(self, rect, surface):
         obj = pygame.image.load(rect.get_sprite())
